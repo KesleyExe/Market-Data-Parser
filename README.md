@@ -1,6 +1,6 @@
 What It Does
 
-QuantFlow Zero is a fully self-contained market analysis tool that fetches real-time stock and crypto data from Yahoo Finance, runs five technical indicators on it, and generates a beautiful interactive dashboard — all without needing any external Python packages. You just run the script, type a stock symbol, and it spits out a sleek HTML report you open in your browser.
+QuantFlow Zero is a fully self-contained market analysis tool that fetches real-time stock and crypto data from Yahoo Finance, runs five technical indicators on it, and generates a beautiful interactive dashboard all without needing any external Python packages. You just run the script, type a stock symbol, and it spits out a sleek HTML report you open in your browser.
 
 Key Features
 
