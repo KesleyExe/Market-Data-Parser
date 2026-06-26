@@ -1,2 +1,14 @@
-# Market-Data-Parser
-QuantFlow Zero fetches live stock/crypto data via Yahoo Finance, runs 5 technical indicators (MA, RSI, MACD, Bollinger, Volume) in pure Python, and generates a sleek interactive HTML dashboard with AI predictions, risk management, and charts — zero dependencies, just run and open.
+What It Does
+
+QuantFlow Zero is a fully self-contained market analysis tool that fetches real-time stock and crypto data from Yahoo Finance, runs five technical indicators on it, and generates a beautiful interactive dashboard — all without needing any external Python packages. You just run the script, type a stock symbol, and it spits out a sleek HTML report you open in your browser.
+
+Key Features
+
+- Zero dependencies — Uses only Python's built-in libraries (urllib, json, math, datetime). No pip install needed, no virtual environments, no version conflicts
+- Fetches live market data — Pulls real price history from Yahoo Finance's public API for any stock, ETF, or cryptocurrency (AAPL, TSLA, BTC-USD, etc.)
+- Five technical indicators analyzed in plain English — Moving Average, RSI, MACD, Bollinger Bands, and Volume, each explained like you're five years old (e.g., "RSI is 78 — OVERBOUGHT. Everyone's buying = potential pullback coming")
+- AI-style prediction — Combines all five signals into a single verdict: STRONG BUY, BUY, HOLD/WAIT, SELL, or STRONG SELL, with a confidence percentage
+- Interactive chart — Renders price action with Moving Averages and Bollinger Bands using Chart.js, loaded from a CDN inside the HTML
+- Built-in risk management — Auto-calculates stop loss (2× ATR), position size (2% portfolio rule), risk/reward ratio, and max loss, so you don't blow up your account
+- Generates a portable HTML file — The output is a single .html file you can double-click, email, or host anywhere. No server required
+- Auto-opens your browser — After analysis, it automatically launches the report so you see results instantly
