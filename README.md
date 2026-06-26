@@ -12,3 +12,14 @@ Key Features
 - Built-in risk management — Auto-calculates stop loss (2× ATR), position size (2% portfolio rule), risk/reward ratio, and max loss, so you don't blow up your account
 - Generates a portable HTML file — The output is a single .html file you can double-click, email, or host anywhere. No server required
 - Auto-opens your browser — After analysis, it automatically launches the report so you see results instantly
+
+| Step                 | What Happens                                                           |
+| -------------------- | ---------------------------------------------------------------------- |
+| 1. You type a symbol | `AAPL`, `TSLA`, `BTC-USD`, etc.                                        |
+| 2. It fetches data   | Uses `urllib` to hit Yahoo Finance's chart API                         |
+| 3. Pure Python math  | Calculates MA, RSI, MACD, Bollinger Bands, ATR without NumPy or Pandas |
+| 4. Signals scored    | Each indicator gets a strength score (-3 to +3)                        |
+| 5. Prediction made   | Scores are summed into BUY/SELL/HOLD with confidence %                 |
+| 6. HTML generated    | Everything is baked into a single file with embedded CSS/JS            |
+| 7. Browser opens     | You see a dark-mode dashboard with charts and risk metrics             |
+
