@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuantFlow - AAPL Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e1a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        .bg-grid {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none; z-index: 0;
+        }
+        .container {
+            max-width: 1400px; margin: 0 auto; padding: 2rem;
+            position: relative; z-index: 1;
+        }
+        header { text-align: center; padding: 3rem 0; }
+        .logo {
+            font-size: 3rem; font-weight: 800;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -2px;
+            margin-bottom: 0.5rem;
+        }
+        .tagline { color: #64748b; font-size: 1.1rem; }
+        .price-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
+        }
+        .price-display { font-size: 2.2rem; font-weight: 800; }
+        .price-change {
+            font-size: 1.1rem; font-weight: 600;
+            padding: 0.4rem 1rem; border-radius: 8px;
+        }
+        .price-change.up { color: #10b981; background: rgba(16,185,129,0.1); }
+        .price-change.down { color: #ef4444; background: rgba(239,68,68,0.1); }
+        .prediction-hero {
+            background: linear-gradient(135deg, #111827, #1a2234);
+            border: 1px solid #1e293b; border-radius: 20px;
+            padding: 2.5rem; text-align: center; margin-bottom: 2rem;
+            position: relative; overflow: hidden;
+        }
+        .prediction-hero::after {
+            content: ''; position: absolute; top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%);
+            opacity: 0.5; pointer-events: none;
+        }
+        .prediction-label {
+            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px;
+            color: #64748b; margin-bottom: 1rem; position: relative; z-index: 1;
+        }
+        .prediction-value {
+            font-size: 2.8rem; font-weight: 800; margin-bottom: 0.5rem;
+            position: relative; z-index: 1; color: #10b981;
+            text-shadow: 0 0 30px #10b98133;
+        }
+        .confidence-bar {
+            width: 100%; max-width: 400px; height: 8px;
+            background: #1e293b; border-radius: 4px;
+            margin: 1.5rem auto; overflow: hidden;
+            position: relative; z-index: 1;
+        }
+        .confidence-fill {
+            height: 100%; border-radius: 4px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            width: 20.0%; transition: width 1s ease;
+        }
+        .confidence-text {
+            color: #64748b; font-size: 0.9rem;
+            position: relative; z-index: 1;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem; margin-top: 2rem;
+        }
+        .chart-container {
+            background: #111827; border: 1px solid #1e293b;
+            border-radius: 16px; padding: 1.5rem;
+            margin-top: 2rem; height: 400px; position: relative;
+        }
+        .risk-panel {
+            background: linear-gradient(135deg, rgba(239,68,68,0.05), rgba(16,185,129,0.05));
+            border: 1px solid #1e293b; border-radius: 16px;
+            padding: 1.5rem; margin-top: 2rem;
+        }
+        .risk-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.5rem; margin-top: 1rem;
+        }
+        .risk-item {
+            text-align: center; padding: 1rem;
+            background: #0a0e1a; border-radius: 12px;
+            border: 1px solid #1e293b;
+        }
+        .risk-label {
+            font-size: 0.7rem; text-transform: uppercase;
+            letter-spacing: 1px; color: #64748b; margin-bottom: 0.5rem;
+        }
+        .risk-value { font-size: 1.3rem; font-weight: 700; }
+        .risk-value.danger { color: #ef4444; }
+        .risk-value.safe { color: #10b981; }
+        .risk-rules {
+            margin-top: 1.5rem; padding: 1rem;
+            background: #0a0e1a; border-radius: 8px;
+            color: #64748b; font-size: 0.8rem; line-height: 1.6;
+        }
+        @media (max-width: 768px) {
+            .logo { font-size: 2rem; }
+            .prediction-value { font-size: 2rem; }
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="container">
+        <header>
+            <div class="logo">QuantFlow</div>
+            <div class="tagline">Market Intelligence for Everyone</div>
+        </header>
+
+        <div class="price-header">
+            <div>
+                <div style="font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">AAPL</div>
+                <div class="price-display">$281.3</div>
+            </div>
+            <div class="price-change up">
+                +2.24%
+            </div>
+        </div>
+
+        <div class="prediction-hero">
+            <div class="prediction-label">AI Prediction</div>
+            <div class="prediction-value">BUY</div>
+            <div class="confidence-bar">
+                <div class="confidence-fill"></div>
+            </div>
+            <div class="confidence-text">20.0% Confidence • 3 Bullish • 1 Bearish</div>
+            <div style="margin-top: 1rem; color: #64748b; font-size: 0.95rem;">More bullish signals than bearish. Good setup.</div>
+        </div>
+
+        <div class="grid">
+            
+        <div style="background:#111827;border:1px solid #1e293b;border-radius:16px;padding:1.5rem;transition:all 0.3s;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:700;">MOVING AVERAGE</div>
+                <div style="padding:0.3rem 0.7rem;border-radius:20px;font-size:0.7rem;font-weight:700;text-transform:uppercase;background:rgba(16,185,129,0.1);color:#10b981;border:1px solid #10b98133;">BULLISH</div>
+            </div>
+            <div style="font-size:1.4rem;font-weight:700;margin-bottom:0.5rem;color:#e2e8f0;">$281.30 vs MA20: $298.16</div>
+            <div style="color:#64748b;font-size:0.85rem;line-height:1.5;">Price ($281.30) is above both moving averages. Trend is UP.</div>
+            <div style="display:flex;margin-top:0.75rem;"><div style="flex:1;height:4px;border-radius:2px;background:#10b981;margin:0 2px;"></div><div style="flex:1;height:4px;border-radius:2px;background:#10b981;margin:0 2px;"></div><div style="flex:1;height:4px;border-radius:2px;background:#1e293b;margin:0 2px;"></div></div>
+        </div>
+        
+        <div style="background:#111827;border:1px solid #1e293b;border-radius:16px;padding:1.5rem;transition:all 0.3s;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:700;">RSI</div>
+                <div style="padding:0.3rem 0.7rem;border-radius:20px;font-size:0.7rem;font-weight:700;text-transform:uppercase;background:rgba(16,185,129,0.1);color:#10b981;border:1px solid #10b98133;">BULLISH</div>
+            </div>
+            <div style="font-size:1.4rem;font-weight:700;margin-bottom:0.5rem;color:#e2e8f0;">31.1</div>
+            <div style="color:#64748b;font-size:0.85rem;line-height:1.5;">RSI at 31.1 is neutral - no extreme pressure.</div>
+            <div style="display:flex;margin-top:0.75rem;"><div style="flex:1;height:4px;border-radius:2px;background:#10b981;margin:0 2px;"></div><div style="flex:1;height:4px;border-radius:2px;background:#1e293b;margin:0 2px;"></div><div style="flex:1;height:4px;border-radius:2px;background:#1e293b;margin:0 2px;"></div></div>
+        </div>
+        
+        <div style="background:#111827;border:1px solid #1e293b;border-radius:16px;padding:1.5rem;transition:all 0.3s;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:700;">MACD</div>
+                <div style="padding:0.3rem 0.7rem;border-radius:20px;font-size:0.7rem;font-weight:700;text-transform:uppercase;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid #ef444433;">BEARISH</div>
+            </div>
+            <div style="font-size:1.4rem;font-weight:700;margin-bottom:0.5rem;color:#e2e8f0;">MACD: -2.302</div>
+            <div style="color:#64748b;font-size:0.85rem;line-height:1.5;">MACD is below signal line. Momentum is shifting DOWN.</div>
+            <div style="display:flex;margin-top:0.75rem;"><div style="flex:1;height:4px;border-radius:2px;background:#ef4444;margin:0 2px;"></div><div style="flex:1;height:4px;border-radius:2px;background:#1e293b;margin:0 2px;"></div><div style="flex:1;height:4px;border-radius:2px;background:#1e293b;margin:0 2px;"></div></div>
+        </div>
+        
+        <div style="background:#111827;border:1px solid #1e293b;border-radius:16px;padding:1.5rem;transition:all 0.3s;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:700;">BOLLINGER</div>
+                <div style="padding:0.3rem 0.7rem;border-radius:20px;font-size:0.7rem;font-weight:700;text-transform:uppercase;background:rgba(16,185,129,0.1);color:#10b981;border:1px solid #10b98133;">BULLISH</div>
+            </div>
+            <div style="font-size:1.4rem;font-weight:700;margin-bottom:0.5rem;color:#e2e8f0;">$278 - $318</div>
+            <div style="color:#64748b;font-size:0.85rem;line-height:1.5;">Price is in normal range.</div>
+            <div style="display:flex;margin-top:0.75rem;"><div style="flex:1;height:4px;border-radius:2px;background:#10b981;margin:0 2px;"></div><div style="flex:1;height:4px;border-radius:2px;background:#1e293b;margin:0 2px;"></div><div style="flex:1;height:4px;border-radius:2px;background:#1e293b;margin:0 2px;"></div></div>
+        </div>
+        
+        <div style="background:#111827;border:1px solid #1e293b;border-radius:16px;padding:1.5rem;transition:all 0.3s;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:700;">VOLUME</div>
+                <div style="padding:0.3rem 0.7rem;border-radius:20px;font-size:0.7rem;font-weight:700;text-transform:uppercase;background:rgba(148,163,184,0.05);color:#94a3b8;border:1px solid #94a3b833;">NEUTRAL</div>
+            </div>
+            <div style="font-size:1.4rem;font-weight:700;margin-bottom:0.5rem;color:#e2e8f0;">1.3x normal</div>
+            <div style="color:#64748b;font-size:0.85rem;line-height:1.5;">Volume is 1.3x average. Normal activity.</div>
+            <div style="display:flex;margin-top:0.75rem;"><div style="flex:1;height:4px;border-radius:2px;background:#1e293b;margin:0 2px;"></div><div style="flex:1;height:4px;border-radius:2px;background:#1e293b;margin:0 2px;"></div><div style="flex:1;height:4px;border-radius:2px;background:#1e293b;margin:0 2px;"></div></div>
+        </div>
+        
+        </div>
+
+        <div class="chart-container">
+            <canvas id="priceChart"></canvas>
+        </div>
+
+        <div class="risk-panel">
+            <div style="text-align: center; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; font-weight: 700; margin-bottom: 1rem;">🛡️ Risk Management</div>
+            <div class="risk-grid">
+                <div class="risk-item">
+                    <div class="risk-label">Stop Loss</div>
+                    <div class="risk-value danger">$263.45</div>
+                </div>
+                <div class="risk-item">
+                    <div class="risk-label">Position Size</div>
+                    <div class="risk-value safe">112 shares</div>
+                </div>
+                <div class="risk-item">
+                    <div class="risk-label">Risk/Reward</div>
+                    <div class="risk-value danger">1:1.5</div>
+                </div>
+                <div class="risk-item">
+                    <div class="risk-label">Max Loss (2% Rule)</div>
+                    <div class="risk-value danger">$1999.04</div>
+                </div>
+                <div class="risk-item">
+                    <div class="risk-label">ATR (Volatility)</div>
+                    <div class="risk-value">$8.92</div>
+                </div>
+            </div>
+            <div class="risk-rules">
+                <strong style="color: #e2e8f0;">Risk Rules:</strong><br>
+                • Never risk more than 2% of your portfolio on a single trade<br>
+                • Stop loss is placed at 2x ATR from entry<br>
+                • Only take trades with Risk/Reward ratio of at least 1:2<br>
+                • Position size is calculated automatically based on your stop distance
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem; padding: 1rem; color: #64748b; font-size: 0.75rem;">
+            ⚠️ For educational purposes only. Not financial advice.<br>
+            Generated on 2026-06-26 15:42
+        </div>
+    </div>
+
+    <script>
+        const chartData = {"dates": ["2026-04-01", "2026-04-02", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-01", "2026-05-04", "2026-05-05", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29", "2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04", "2026-06-05", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-22", "2026-06-23", "2026-06-24", "2026-06-25", "2026-06-26"], "prices": [255.6300048828125, 255.9199981689453, 258.8599853515625, 253.5, 258.8999938964844, 260.489990234375, 260.4800109863281, 259.20001220703125, 258.8299865722656, 266.42999267578125, 263.3999938964844, 270.2300109863281, 273.04998779296875, 266.1700134277344, 273.1700134277344, 273.42999267578125, 271.05999755859375, 267.6099853515625, 270.7099914550781, 270.1700134277344, 271.3500061035156, 280.1400146484375, 276.8299865722656, 284.17999267578125, 287.510009765625, 287.44000244140625, 293.32000732421875, 292.67999267578125, 294.79998779296875, 298.8699951171875, 298.2099914550781, 300.2300109863281, 297.8399963378906, 298.9700012207031, 302.25, 304.989990234375, 308.82000732421875, 308.3299865722656, 310.8500061035156, 312.510009765625, 312.05999755859375, 306.30999755859375, 315.20001220703125, 310.260009765625, 311.2300109863281, 307.3399963378906, 301.5400085449219, 290.54998779296875, 291.5799865722656, 295.6300048828125, 291.1300048828125, 296.4200134277344, 299.239990234375, 295.95001220703125, 298.010009765625, 297.010009765625, 294.29998779296875, 293.0799865722656, 275.1499938964844, 281.29998779296875], "ma20": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 260.48999938964846, 261.3984992980957, 262.33899841308596, 263.5429977416992, 264.3619987487793, 265.14799880981445, 266.35899963378904, 267.2574996948242, 268.79149932861327, 270.2220001220703, 271.5695007324219, 273.2115005493164, 274.88549957275393, 276.6839996337891, 278.3059997558594, 280.04649963378904, 281.54649963378904, 282.78600006103517, 284.4259994506836, 285.8799987792969, 287.45799865722654, 289.3459991455078, 291.38199920654296, 293.38899993896484, 295.50599975585936, 297.54149932861327, 298.8499984741211, 300.76849975585935, 302.07250061035154, 303.25850067138674, 304.2535003662109, 304.6645004272461, 304.5580001831055, 304.3970001220703, 304.23500061035156, 303.8810012817383, 303.6905014038086, 303.7605010986328, 303.60950164794923, 303.39750213623046, 302.99850311279295, 302.27250213623046, 301.51000213623047, 299.7250015258789, 298.1645004272461], "ma50": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 281.2373999023437, 282.21040008544924, 283.04539978027344, 283.9443994140625, 284.7811996459961, 285.4911996459961, 286.3011999511719, 287.10880004882813, 287.9578002929687, 288.74000061035156, 289.47040100097655, 290.14680053710936, 290.82440002441405, 291.15080017089844, 291.44820007324216], "bb_upper": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 275.9252605160555, 277.0745565180755, 277.10966887476695, 276.84842737434735, 277.17256685911264, 277.6442533250128, 279.7085761642066, 280.88333011189957, 282.77974543799115, 285.64904941185796, 288.03401820767266, 291.38613212556373, 293.74413732930714, 295.9316300548972, 299.2192129624062, 301.49506840419326, 304.2013719249592, 306.1474053605827, 307.4946587512403, 309.5845582685886, 311.82977804260383, 314.1897839192913, 315.4282037612264, 316.89308518682554, 317.86251126540134, 318.0681925746705, 318.06747577967576, 318.40588193970626, 318.4205162822596, 318.6204667944624, 317.8666061735013, 317.40048562952944, 317.72151635609, 318.1016154123011, 318.26974282837153, 318.83294973560794, 318.9182039119775, 318.8925548877513, 318.9880197192533, 318.96092900242667, 318.7857214562816, 318.25633161637126, 317.71861172466845, 318.99925866156894, 318.08838740973204], "bb_lower": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 245.0547382632414, 245.72244207811593, 247.568327951405, 250.23756810905104, 251.5514306384459, 252.65174429461612, 253.00942310337152, 253.63166927774887, 254.80325321923536, 254.79495083228267, 255.1049832571711, 255.03686897306903, 256.0268618162007, 257.436369212681, 257.3927865493126, 258.5979308633848, 258.8916273426189, 259.42459476148764, 261.3573401501269, 262.1754392900052, 263.08621927184925, 264.5022143717243, 267.3357946518595, 269.88491469110414, 273.1494882463174, 277.01480608255605, 279.6325211685664, 283.13111757201244, 285.7244849384435, 287.8965345483111, 290.64039455892055, 291.9285152249627, 291.394484010121, 290.69238483183955, 290.2002583923316, 288.92905282786865, 288.46279889563965, 288.6284473095143, 288.23098357664514, 287.83407527003425, 287.2112847693043, 286.28867265608966, 285.3013925477925, 280.45074439018885, 278.24061344476013], "volume": [40059400, 31289400, 29329900, 62148000, 41032800, 28121600, 31291500, 36234700, 48370700, 49913500, 43323100, 61436200, 36590200, 50209800, 43249200, 33399600, 38157100, 41466800, 40018900, 30047900, 91848200, 79915400, 46668400, 49311700, 58336100, 45224300, 52692800, 42247300, 45748100, 52684300, 35324900, 54862800, 34483000, 42243600, 38229800, 42965100, 43670200, 48000500, 50430900, 48220400, 70026800, 48849900, 44534700, 50836700, 44869100, 65310500, 77949100, 70108800, 52793300, 42572500, 38742100, 45732600, 39874400, 42745100, 85962200, 44879900, 52010900, 53081900, 107013700, 77201070]};
+
+        const datasets = [{
+            label: 'Price',
+            data: chartData.prices,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 0
+        }];
+
+        if (chartData.ma20 && chartData.ma20.some(v => v !== null && v !== 0)) {
+            datasets.push({
+                label: 'MA20',
+                data: chartData.ma20,
+                borderColor: '#10b981',
+                borderWidth: 1,
+                pointRadius: 0,
+                fill: false
+            });
+        }
+
+        if (chartData.ma50 && chartData.ma50.some(v => v !== null && v !== 0)) {
+            datasets.push({
+                label: 'MA50',
+                data: chartData.ma50,
+                borderColor: '#f59e0b',
+                borderWidth: 1,
+                pointRadius: 0,
+                fill: false
+            });
+        }
+
+        if (chartData.bb_upper && chartData.bb_upper.some(v => v !== null && v !== 0)) {
+            datasets.push({
+                label: 'BB Upper',
+                data: chartData.bb_upper,
+                borderColor: 'rgba(239, 68, 68, 0.3)',
+                borderWidth: 1,
+                pointRadius: 0,
+                fill: false,
+                borderDash: [5, 5]
+            });
+            datasets.push({
+                label: 'BB Lower',
+                data: chartData.bb_lower,
+                borderColor: 'rgba(16, 185, 129, 0.3)',
+                borderWidth: 1,
+                pointRadius: 0,
+                fill: false,
+                borderDash: [5, 5]
+            });
+        }
+
+        new Chart(document.getElementById('priceChart'), {
+            type: 'line',
+            data: {
+                labels: chartData.dates,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { intersect: false, mode: 'index' },
+                plugins: {
+                    legend: { labels: { color: '#94a3b8' } }
+                },
+                scales: {
+                    x: { grid: { color: 'rgba(30, 41, 59, 0.5)' }, ticks: { color: '#64748b' } },
+                    y: { grid: { color: 'rgba(30, 41, 59, 0.5)' }, ticks: { color: '#64748b' } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
