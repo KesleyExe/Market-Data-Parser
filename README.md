@@ -23,7 +23,7 @@ Key Features
 | 6. HTML generated    | Everything is baked into a single file with embedded CSS/JS            |
 | 7. Browser opens     | You see a dark-mode dashboard with charts and risk metrics             |
 
-What I leaned
+#*What I leaned*
 
 ### Technical Skills
 - **Financial data APIs** — parsed Yahoo Finance's v8 chart API response structure
