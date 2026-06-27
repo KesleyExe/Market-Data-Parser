@@ -25,6 +25,22 @@ Key Features
 
 What I leaned
 
-> Parsed Yahoo Finance's nested JSON API and handled missing/irregular time series data without pandas, understanding the raw structure behind abstractions.
-> Built a zero-dependency architecture after hitting environment conflicts, prioritizing reliability over convenience, a lesson in production-ready design.
-> Implemented EMA, RSI, MACD, and Bollinger Bands from scratch in pure Python, learning how institutional traders combine signals for entry/exit decisions.
+### Technical Skills
+- **Financial data APIs** — parsed Yahoo Finance's v8 chart API response structure
+- **Technical analysis from scratch** — implemented EMA, RSI, MACD, Bollinger Bands, and ATR without NumPy/Pandas
+- **Pure Python performance** — learned to optimize loops and avoid unnecessary allocations when doing math at scale
+- **HTML generation** — built a templating system using f-strings to produce valid, styled HTML documents programmatically
+
+### Problem-Solving
+- **Dependency hell is real** — started with Flask/yfinance/pandas, hit environment conflicts, pivoted to zero-dependency approach
+- **API reliability** — handled rate limiting, missing data points, and malformed responses gracefully
+- **Cross-platform compatibility** — ensured the same script runs on Windows, Mac, and Linux without modification
+
+### Quantitative Finance
+- **Signal weighting** — learned how to combine multiple indicators into a single weighted prediction score
+- **Risk management** — implemented the 2% rule, ATR-based stop losses, and position sizing using the Kelly Criterion approach
+- **Market psychology** — RSI overbought/oversold levels, volume confirmation, momentum divergence via MACD
+
+### Soft Skills
+- **Scope management** — cut features that required heavy dependencies, focused on core value
+- **User experience** — wrote plain-English explanations so non-technical users understand each signal
