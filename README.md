@@ -23,3 +23,8 @@ Key Features
 | 6. HTML generated    | Everything is baked into a single file with embedded CSS/JS            |
 | 7. Browser opens     | You see a dark-mode dashboard with charts and risk metrics             |
 
+What I leaned
+
+> Parsed Yahoo Finance's nested JSON API and handled missing/irregular time series data without pandas, understanding the raw structure behind abstractions.
+> Built a zero-dependency architecture after hitting environment conflicts, prioritizing reliability over convenience, a lesson in production-ready design.
+> Implemented EMA, RSI, MACD, and Bollinger Bands from scratch in pure Python, learning how institutional traders combine signals for entry/exit decisions.
