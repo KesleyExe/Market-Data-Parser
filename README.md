@@ -44,3 +44,9 @@ Quantitative Finance
 Soft Skills
 - **Scope management** — cut features that required heavy dependencies, focused on core value
 - **User experience** — wrote plain-English explanations so non-technical users understand each signal
+
+VIDEO ENJOY!!
+
+https://github.com/user-attachments/assets/6f440b6e-6ead-4fbf-8ca7-cd27c7ee26b9
+
+
