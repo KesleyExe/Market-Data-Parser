@@ -13,7 +13,7 @@ QuantFlow Zero is a fully self-contained market analysis tool that fetches real-
 - Generates a portable HTML file — The output is a single .html file you can double-click, email, or host anywhere. No server required
 - Auto-opens your browser — After analysis, it automatically launches the report so you see results instantly
 
-| ### Step                 | ### What Happens                                                           |
+| Step                 | What Happens                                                           |
 | -------------------- | ---------------------------------------------------------------------- |
 | 1. You type a symbol | `AAPL`, `TSLA`, `BTC-USD`, etc.                                        |
 | 2. It fetches data   | Uses `urllib` to hit Yahoo Finance's chart API                         |
